@@ -1,0 +1,14 @@
+{
+  "name": "kids-academy-schedule-root",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "install:all": "npm install && cd www && npm install && cd backend && npm install",
+    "dev": "concurrently \"cd www && vite\" \"cd www/backend && node server.js\"",
+    "build": "cd www && npm run build",
+    "start": "cd www/backend && node server.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

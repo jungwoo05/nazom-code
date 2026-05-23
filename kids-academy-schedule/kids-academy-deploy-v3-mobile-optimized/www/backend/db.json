@@ -1,0 +1,73 @@
+{
+  "children": [
+    {
+      "id": "child-1775915061757",
+      "name": "박승찬",
+      "memo": "ㅈㅈㅈㅈㅈ"
+    },
+    {
+      "id": "child-1775915066634",
+      "name": "박세유",
+      "schoolDismissalTimes": {
+        "월": "14:30",
+        "수": "13:40",
+        "화": "14:30",
+        "목": "14:30",
+        "금": "14:30"
+      },
+      "memo": "박세유 바보"
+    }
+  ],
+  "schedules": {
+    "child-1775915061757": [],
+    "child-1775915066634": [
+      {
+        "id": "1775915244370",
+        "title": "정상어학원/영어",
+        "days": [
+          "월",
+          "수",
+          "금"
+        ],
+        "startTime": "18:00",
+        "endTime": "19:30",
+        "color": "#FFCDD2",
+        "hasShuttle": true,
+        "shuttleTime": "17:20",
+        "shuttleLocation": "우성아파트",
+        "alarmMinutesBefore": 10
+      },
+      {
+        "id": "1775915550927",
+        "title": "유투엠/수학",
+        "days": [
+          "화",
+          "목"
+        ],
+        "startTime": "14:30",
+        "endTime": "17:50",
+        "color": "#C8E6C9",
+        "hasShuttle": false,
+        "shuttleTime": "12:30",
+        "shuttleLocation": "",
+        "alarmMinutesBefore": 10,
+        "memo": ""
+      },
+      {
+        "id": "1775915593979",
+        "title": "유투엠/수학",
+        "days": [
+          "토"
+        ],
+        "startTime": "09:30",
+        "endTime": "11:40",
+        "color": "#C8E6C9",
+        "hasShuttle": false,
+        "shuttleTime": "12:30",
+        "shuttleLocation": "",
+        "alarmMinutesBefore": 10,
+        "memo": "숙제 준비완료"
+      }
+    ]
+  }
+}

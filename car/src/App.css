@@ -1,0 +1,118 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  position: relative;
+}
+
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Hero Media Queries */
+@media (max-width: 768px) {
+  .hero-text h2 {
+    font-size: 32px !important;
+  }
+}
+
+.hero-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  z-index: 1;
+}
+
+.hero-bg-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(8, 10, 15, 0.9) 0%, rgba(20, 24, 32, 0.7) 100%);
+  z-index: 2;
+}
+
+.hero-text {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  color: white;
+  text-align: center;
+  transform: translateY(-40px); /* Push up slightly to balance floating card */
+}
+
+.hero-text h2 {
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+  background: linear-gradient(to right, #fff, var(--primary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-text p {
+  font-size: 20px;
+  font-weight: 500;
+  color: #adb5bd;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    height: auto;
+    min-height: 250px;
+    padding: 60px 0 40px;
+  }
+}
+
+.wizard-container {
+  position: relative;
+  z-index: 10;
+  margin-top: -180px; /* Pulls the card up into the hero section */
+  margin-bottom: 64px;
+}
+
+.wizard-floating-card {
+  width: 100%;
+  min-height: 600px;
+  background: rgba(22, 24, 30, 0.75);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  border-radius: 24px;
+  padding: 0; /* Let children handle padding naturally */
+}
+
+@media (max-width: 768px) {
+  .wizard-container {
+    margin-top: -120px;
+    margin-bottom: 40px;
+  }
+  .wizard-floating-card {
+    min-height: auto;
+    border-radius: 16px;
+  }
+}
+
+.store-info-wrapper {
+  margin-top: 60px;
+  margin-bottom: 80px;
+}
+
+.wrapper-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin-bottom: 24px;
+  text-align: center;
+}

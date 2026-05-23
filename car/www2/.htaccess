@@ -1,0 +1,15 @@
+RewriteEngine On
+RewriteBase /
+
+# API 라우팅 → PHP 스크립트
+RewriteRule ^api/products/?$              api/products.php [QSA,L]
+RewriteRule ^api/products/([^/]+)/?$      api/products.php?id=$1 [QSA,L]
+RewriteRule ^api/reservations/?$          api/reservations.php [QSA,L]
+RewriteRule ^api/reservations/([^/]+)/?$  api/reservations.php?index=$1 [QSA,L]
+RewriteRule ^api/posts/?$                 api/posts.php [QSA,L]
+RewriteRule ^api/posts/([^/]+)/?$         api/posts.php?id=$1 [QSA,L]
+
+# SPA fallback — React Router 지원
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . index.html [L]

@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # Redirect /api requests to the Node.js server (if Apache proxy is available)
+  # Otherwise, let the frontend handle the relative URL and assuming Node is running.
+  # If you want Apache to Proxy, uncomment these (requires mod_proxy):
+  # RewriteRule ^api/(.*) http://localhost:3001/api/$1 [P,L]
+
+  # For SPA: If the requested resource is not a file or directory, serve index.html
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
