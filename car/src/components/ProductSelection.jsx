@@ -17,6 +17,11 @@ const ProductSelection = ({ carSelections, onBack, onComplete }) => {
   const [customer, setCustomer] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Calendar States
+  const [appointmentDate, setAppointmentDate] = useState('');
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calDate, setCalDate] = useState(new Date());
+
   useEffect(() => {
     fetch('/api/products')
       .then(res => res.json())
@@ -51,12 +56,64 @@ const ProductSelection = ({ carSelections, onBack, onComplete }) => {
     return acc;
   }, {});
 
+  // Calendar logic
+  const year = calDate.getFullYear();
+  const month = calDate.getMonth();
+  
+  const firstDayIndex = new Date(year, month, 1).getDay();
+  const numberOfDays = new Date(year, month + 1, 0).getDate();
+  const prevNumberOfDays = new Date(year, month, 0).getDate();
+
+  const prevDays = [];
+  for (let i = firstDayIndex - 1; i >= 0; i--) {
+    prevDays.push({ day: prevNumberOfDays - i, isCurrentMonth: false });
+  }
+
+  const currentDays = [];
+  for (let i = 1; i <= numberOfDays; i++) {
+    currentDays.push({ day: i, isCurrentMonth: true });
+  }
+
+  const nextDays = [];
+  const totalCells = prevDays.length + currentDays.length;
+  const remainingCells = 42 - totalCells;
+  for (let i = 1; i <= remainingCells; i++) {
+    nextDays.push({ day: i, isCurrentMonth: false });
+  }
+
+  const allDays = [...prevDays, ...currentDays, ...nextDays];
+
+  const isPastDate = (dayVal) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(year, month, dayVal);
+    return target < today;
+  };
+
+  const isSelectedDate = (dayVal) => {
+    if (!appointmentDate) return false;
+    const [selY, selM, selD] = appointmentDate.split('-').map(Number);
+    return selY === year && selM === month + 1 && selD === dayVal;
+  };
+
+  const handleSelectDay = (dayVal) => {
+    const formattedM = String(month + 1).padStart(2, '0');
+    const formattedD = String(dayVal).padStart(2, '0');
+    setAppointmentDate(`${year}-${formattedM}-${formattedD}`);
+    setShowCalendar(false);
+  };
+
+  const handlePrevMonth = () => setCalDate(new Date(year, month - 1, 1));
+  const handleNextMonth = () => setCalDate(new Date(year, month + 1, 1));
+
   const handleSubmit = async () => {
     if (!customer.trim()) { alert('고객명 및 연락처를 입력해주세요.'); return; }
+    if (!appointmentDate) { alert('희망 예약 날짜를 선택해주세요.'); return; }
     if (selectedItems.length === 0) { alert('최소 1개 이상의 정비 항목을 선택해주세요.'); return; }
     setLoading(true);
     const reservationData = {
       customer,
+      appointmentDate,
       car: `${carSelections.manufacturer} ${carSelections.model} (${carSelections.year}) - ${carSelections.detailedModel}`,
       items: selectedItems.map(i => i.name),
       total: `${totalPrice.toLocaleString()}원`
@@ -140,10 +197,65 @@ const ProductSelection = ({ carSelections, onBack, onComplete }) => {
           />
         </div>
 
+        <div className="customer-section appointment-section" style={{ position: 'relative' }}>
+          <label className="input-label">희망 예약 날짜</label>
+          <div className="date-picker-wrap">
+            <input
+              type="text"
+              className="input-field date-input-field"
+              placeholder="방문 희망 날짜 선택"
+              value={appointmentDate ? `${appointmentDate}` : ''}
+              readOnly
+              onClick={() => setShowCalendar(!showCalendar)}
+              style={{ cursor: 'pointer' }}
+            />
+            <button 
+              type="button" 
+              className="calendar-toggle-btn"
+              onClick={() => setShowCalendar(!showCalendar)}
+            >
+              📅
+            </button>
+          </div>
+          
+          {showCalendar && (
+            <div className="compact-calendar-popup">
+              <div className="cal-header">
+                <button type="button" className="cal-nav-btn" onClick={handlePrevMonth}>&lt;</button>
+                <span className="cal-title">{year}년 {month + 1}월</span>
+                <button type="button" className="cal-nav-btn" onClick={handleNextMonth}>&gt;</button>
+              </div>
+              <div className="cal-weekdays">
+                <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+              </div>
+              <div className="cal-days-grid">
+                {allDays.map((item, idx) => {
+                  if (!item.isCurrentMonth) {
+                    return <span key={idx} className="cal-day pad">{item.day}</span>;
+                  }
+                  const disabled = isPastDate(item.day);
+                  const selected = isSelectedDate(item.day);
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`cal-day active-day ${selected ? 'selected' : ''}`}
+                      disabled={disabled}
+                      onClick={() => handleSelectDay(item.day)}
+                    >
+                      {item.day}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
         <button
           className="btn-primary submit-btn"
           onClick={handleSubmit}
-          disabled={loading || selectedItems.length === 0 || !customer.trim()}
+          disabled={loading || selectedItems.length === 0 || !customer.trim() || !appointmentDate}
         >
           {loading ? '전송 중...' : '예약 확정'}
         </button>

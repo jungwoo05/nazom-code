@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   X, ClipboardList, Wrench, Trash2, Plus, Pencil, Check, ChevronDown,
-  RefreshCw, AlertCircle, FileText
+  RefreshCw, AlertCircle, FileText, Search, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { manufacturers, getModelsForManufacturer, getYears, getDetailedModelsForModel } from '../data/mockData';
 import './AdminPanel.css';
@@ -76,6 +76,7 @@ const ReservationsTab = () => {
               <tr>
                 <th>#</th>
                 <th>예약 일시</th>
+                <th>희망 예약일</th>
                 <th>고객 정보</th>
                 <th>차량</th>
                 <th>선택 항목</th>
@@ -88,6 +89,15 @@ const ReservationsTab = () => {
                 <tr key={i}>
                   <td className="row-num">{i + 1}</td>
                   <td className="cell-date">{r['예약일시']}</td>
+                  <td className="cell-appointment" style={{ whiteSpace: 'nowrap' }}>
+                    {r['희망예약일'] ? (
+                      <span className="car-target-badge" style={{ background: 'rgba(209, 244, 40, 0.08)', borderColor: 'rgba(209, 244, 40, 0.25)', color: 'var(--primary-color)' }}>
+                        {r['희망예약일']}
+                      </span>
+                    ) : (
+                      <span style={{ color: 'var(--text-tertiary)' }}>-</span>
+                    )}
+                  </td>
                   <td className="cell-customer"><strong>{r['고객명/연락처']}</strong></td>
                   <td className="cell-car">{r['예약차량상세']}</td>
                   <td className="cell-items">
@@ -121,6 +131,12 @@ const EMPTY_FORM = { category: 'engine', name: '', price: '', '브랜드': '', '
 const ProductsTab = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Search & Pagination States
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedBrandFilter, setSelectedBrandFilter] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
@@ -350,12 +366,41 @@ const ProductsTab = () => {
     }
   };
 
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedBrandFilter, selectedCategoryFilter]);
+
+  // Apply filters
+  const filteredProducts = products.filter(p => {
+    if (searchTerm.trim() !== '') {
+      const matchName = (p.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+      if (!matchName) return false;
+    }
+    if (selectedBrandFilter !== '') {
+      if (p['브랜드'] !== selectedBrandFilter) return false;
+    }
+    if (selectedCategoryFilter !== '') {
+      if (p.category !== selectedCategoryFilter) return false;
+    }
+    return true;
+  });
+
+  const ITEMS_PER_PAGE = 50;
+  const totalItems = filteredProducts.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+  
+  const activePage = Math.min(currentPage, totalPages);
+  const startIndex = (activePage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
   if (loading) return <div className="admin-loading"><RefreshCw size={20} className="spin"/>불러오는 중...</div>;
 
   return (
     <div className="admin-tab-content">
       <div className="tab-toolbar">
-        <h3>정비 항목 관리 ({products.length}건)</h3>
+        <h3>정비 항목 관리 ({filteredProducts.length !== products.length ? `${filteredProducts.length}건 / 전체 ${products.length}건` : `${products.length}건`})</h3>
         <div className="toolbar-actions">
           <button className="icon-btn" onClick={fetchData}><RefreshCw size={16}/> 새로고침</button>
           <button className="icon-btn excel-download-btn" onClick={handleDownloadCsv}>
@@ -373,6 +418,44 @@ const ProductsTab = () => {
           <button className="btn-primary add-btn" onClick={() => setShowAddForm(v => !v)}>
             <Plus size={16}/> 개별 항목 추가
           </button>
+        </div>
+      </div>
+
+      {/* 🔍 Search & Filtering Bar */}
+      <div className="admin-filter-bar">
+        <div className="search-box-wrap">
+          <Search size={16} className="search-icon"/>
+          <input
+            type="text"
+            className="filter-search-input"
+            placeholder="정비 항목명 검색..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        <div className="filter-selects-wrap">
+          <select
+            value={selectedBrandFilter}
+            onChange={e => setSelectedBrandFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">전체 브랜드</option>
+            {manufacturers.map(m => (
+              <option key={m.id} value={m.name}>{m.name}</option>
+            ))}
+          </select>
+          
+          <select
+            value={selectedCategoryFilter}
+            onChange={e => setSelectedCategoryFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">전체 카테고리</option>
+            {CATEGORIES.map(c => (
+              <option key={c.value} value={c.value}>{c.label}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -452,7 +535,7 @@ const ProductsTab = () => {
             </tr>
           </thead>
           <tbody>
-            {products.map((p) => {
+            {paginatedProducts.map((p) => {
               const carText = [p['브랜드'], p['차종'], p['연식'] ? `${p['연식']}년형` : '', p['세부모델']].filter(Boolean).join(' · ');
               const isEditing = editingId === p.id;
               return (
@@ -566,6 +649,55 @@ const ProductsTab = () => {
           </tbody>
         </table>
       </div>
+
+      {/* 📟 Pagination Navigation */}
+      {totalPages > 1 && (
+        <div className="admin-pagination">
+          <div className="pagination-info">
+            총 <strong>{totalItems.toLocaleString()}</strong>건 중{' '}
+            <strong>{(startIndex + 1).toLocaleString()}</strong> ~{' '}
+            <strong>{endIndex.toLocaleString()}</strong>건 표시
+          </div>
+          
+          <div className="pagination-buttons">
+            <button
+              className="pagination-btn"
+              disabled={activePage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            >
+              <ChevronLeft size={16}/> 이전
+            </button>
+            
+            {(() => {
+              const pagesToShow = [];
+              const startPage = Math.max(1, activePage - 2);
+              const endPage = Math.min(totalPages, startPage + 4);
+              const adjustedStartPage = Math.max(1, endPage - 4);
+              
+              for (let pageNum = adjustedStartPage; pageNum <= endPage; pageNum++) {
+                pagesToShow.push(
+                  <button
+                    key={pageNum}
+                    className={`pagination-num-btn ${activePage === pageNum ? 'active' : ''}`}
+                    onClick={() => setCurrentPage(pageNum)}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              }
+              return pagesToShow;
+            })()}
+            
+            <button
+              className="pagination-btn"
+              disabled={activePage === totalPages}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            >
+              다음 <ChevronRight size={16}/>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

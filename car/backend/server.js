@@ -11,7 +11,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const PORT = 3001;
 const productsFile = path.join(__dirname, 'db', 'products.csv');
@@ -56,6 +57,7 @@ const writeReservations = async (reservations) => {
     path: reservationsFile,
     header: [
       { id: '예약일시', title: '예약일시' },
+      { id: '희망예약일', title: '희망예약일' },
       { id: '고객명/연락처', title: '고객명/연락처' },
       { id: '예약차량상세', title: '예약차량상세' },
       { id: '선택정비항목', title: '선택정비항목' },
@@ -245,10 +247,11 @@ app.get('/api/reservations', async (req, res) => {
 // POST save reservation (append)
 app.post('/api/reservations', async (req, res) => {
   try {
-    const { customer, car, items, total } = req.body;
+    const { customer, car, items, total, appointmentDate } = req.body;
     const existing = await readCsv(reservationsFile);
     const newRow = {
       '예약일시': new Date().toLocaleString('ko-KR'),
+      '희망예약일': appointmentDate || '',
       '고객명/연락처': customer,
       '예약차량상세': car,
       '선택정비항목': items.join(' | '),

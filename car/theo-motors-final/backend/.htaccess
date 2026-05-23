@@ -1,3 +1,0 @@
-# Deny all access to the backend folder and its contents via Apache
-# The Node.js server will still be able to read/write these files locally.
-Deny from all
